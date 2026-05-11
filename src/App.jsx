@@ -5,7 +5,7 @@ import { buildCard, buildUniqueCards } from './lib/bingo'
 import { generatePdf } from './lib/pdf'
 
 export default function App() {
-  const [cardCount, setCardCount] = useState(4)
+  const [cardCount, setCardCount] = useState(100)
   const [cardsPerPage, setCardsPerPage] = useState(2)
   const [previewCard, setPreviewCard] = useState(() => buildCard(BINGO_WORDS))
 
