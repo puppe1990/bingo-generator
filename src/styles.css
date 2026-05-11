@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+@layer components {
+  .cloud {
+    @apply absolute h-12 w-[118px] rounded-[40px] bg-sky-50/95;
+    filter: blur(0.2px);
+  }
+
+  .cloud::before,
+  .cloud::after {
+    content: '';
+    position: absolute;
+    background: inherit;
+    border-radius: 9999px;
+  }
+
+  .cloud::before {
+    width: 48px;
+    height: 48px;
+    left: 14px;
+    top: -16px;
+  }
+
+  .cloud::after {
+    width: 62px;
+    height: 62px;
+    right: 12px;
+    top: -22px;
+  }
+}
