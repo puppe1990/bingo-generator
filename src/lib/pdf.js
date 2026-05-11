@@ -109,7 +109,14 @@ function drawCardPage(pdf, templateDataUrl, cards, cardsPerPage, startIndex) {
     const cardBox = getCardPlacement(indexOnPage, cardsPerPage)
     const fontSize = cardsPerPage === 2 ? 12 : 9
 
-    pdf.addImage(templateDataUrl, 'PNG', cardBox.x, cardBox.y, cardBox.width, cardBox.height)
+    pdf.addImage(
+      templateDataUrl,
+      'PNG',
+      cardBox.x,
+      cardBox.y,
+      cardBox.width,
+      cardBox.height
+    )
     pdf.setFont('times', 'bold')
     pdf.setFontSize(fontSize)
     pdf.setTextColor(...TEXT_COLOR)
@@ -121,9 +128,14 @@ function drawCardPage(pdf, templateDataUrl, cards, cardsPerPage, startIndex) {
     pdf.setFont('helvetica', 'normal')
     pdf.setFontSize(cardsPerPage === 2 ? 9 : 8)
     pdf.setTextColor(142, 160, 176)
-    pdf.text(`Cartela ${startIndex + indexOnPage + 1}`, cardBox.x + cardBox.width - 6, cardBox.y + cardBox.height - 6, {
-      align: 'right'
-    })
+    pdf.text(
+      `Cartela ${startIndex + indexOnPage + 1}`,
+      cardBox.x + cardBox.width - 6,
+      cardBox.y + cardBox.height - 6,
+      {
+        align: 'right'
+      }
+    )
   })
 }
 
@@ -136,12 +148,22 @@ export async function generatePdf(cards, cardsPerPage) {
     format: 'a4'
   })
 
-  for (let startIndex = 0; startIndex < cards.length; startIndex += cardsPerPage) {
+  for (
+    let startIndex = 0;
+    startIndex < cards.length;
+    startIndex += cardsPerPage
+  ) {
     if (startIndex > 0) {
       pdf.addPage('a4', 'landscape')
     }
 
-    drawCardPage(pdf, templateDataUrl, cards.slice(startIndex, startIndex + cardsPerPage), cardsPerPage, startIndex)
+    drawCardPage(
+      pdf,
+      templateDataUrl,
+      cards.slice(startIndex, startIndex + cardsPerPage),
+      cardsPerPage,
+      startIndex
+    )
   }
 
   return pdf

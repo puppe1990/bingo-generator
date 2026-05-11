@@ -27,13 +27,19 @@ export function buildCard(words = BINGO_WORDS, random = Math.random) {
   const expectedSize = GRID_COLUMNS * GRID_ROWS
 
   if (words.length < expectedSize) {
-    throw new Error(`Expected at least ${expectedSize} words, received ${words.length}.`)
+    throw new Error(
+      `Expected at least ${expectedSize} words, received ${words.length}.`
+    )
   }
 
   return shuffleWords(words, random).slice(0, expectedSize)
 }
 
-export function buildUniqueCards(count, words = BINGO_WORDS, seed = Date.now()) {
+export function buildUniqueCards(
+  count,
+  words = BINGO_WORDS,
+  seed = Date.now()
+) {
   if (count < 1) {
     throw new Error('Card count must be at least 1.')
   }

@@ -16,7 +16,9 @@ export default function App() {
   async function handleGeneratePdf() {
     const cards = buildUniqueCards(cardCount, BINGO_WORDS)
     const pdf = await generatePdf(cards, cardsPerPage)
-    pdf.save(`bingo-cha-de-bebe-${cardCount}-cartelas-${cardsPerPage}-por-folha.pdf`)
+    pdf.save(
+      `bingo-cha-de-bebe-${cardCount}-cartelas-${cardsPerPage}-por-folha.pdf`
+    )
   }
 
   return (
@@ -30,23 +32,29 @@ export default function App() {
             Gere cartelas no design aquarela e exporte em PDF.
           </h1>
           <p className="max-w-[34ch] text-base leading-7 text-slate-500">
-            Cada cartela usa 16 palavras sorteadas da lista. O PDF pode sair com 2 ou 4 cartelas
-            por folha A4.
+            Cada cartela usa 16 palavras sorteadas da lista. O PDF pode sair com
+            2 ou 4 cartelas por folha A4.
           </p>
           <div className="mt-7 grid gap-[18px]">
             <label className="grid max-w-[220px] gap-2">
-              <span className="text-[0.95rem] font-semibold">Quantidade de cartelas</span>
+              <span className="text-[0.95rem] font-semibold">
+                Quantidade de cartelas
+              </span>
               <input
                 className="rounded-[14px] border border-sky-200 bg-white/80 px-3.5 py-3 text-slate-800 outline-none"
                 min="1"
                 max="100"
                 type="number"
                 value={cardCount}
-                onChange={(event) => setCardCount(Number(event.target.value) || 1)}
+                onChange={(event) =>
+                  setCardCount(Number(event.target.value) || 1)
+                }
               />
             </label>
             <fieldset className="grid gap-2">
-              <legend className="mb-1 text-[0.95rem] font-semibold">Layout do PDF</legend>
+              <legend className="mb-1 text-[0.95rem] font-semibold">
+                Layout do PDF
+              </legend>
               <div className="flex flex-wrap gap-3">
                 {[2, 4].map((option) => {
                   const isSelected = cardsPerPage === option

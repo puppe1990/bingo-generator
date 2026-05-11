@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { BINGO_WORDS, GRID_COLUMNS, GRID_ROWS } from '../data/words'
-import { buildCard, buildUniqueCards, mulberry32, shuffleWords, toGrid } from './bingo'
+import {
+  buildCard,
+  buildUniqueCards,
+  mulberry32,
+  shuffleWords,
+  toGrid
+} from './bingo'
 
 describe('bingo helpers', () => {
   it('keeps all words and changes order deterministically with a seeded rng', () => {
@@ -27,6 +33,7 @@ describe('bingo helpers', () => {
 
     expect(cards).toHaveLength(5)
     expect(new Set(cards.map((card) => card.join('|'))).size).toBe(5)
+    expect(cards.every((card) => new Set(card).size === card.length)).toBe(true)
   })
 
   it('converts a card to a 4x4 grid', () => {
