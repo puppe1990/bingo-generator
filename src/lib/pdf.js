@@ -7,8 +7,8 @@ import {
   TEMPLATE_WIDTH
 } from '../data/template'
 
-const PAGE_WIDTH = 297
-const PAGE_HEIGHT = 210
+const A4_PORTRAIT_WIDTH = 210
+const A4_PORTRAIT_HEIGHT = 297
 const PAGE_MARGIN_X = 10
 const PAGE_MARGIN_Y = 10
 const SLOT_GAP_X = 6
@@ -56,10 +56,37 @@ function getPageLayout(cardsPerPage) {
   throw new Error('Cards per page must be 2 or 4.')
 }
 
+function getPageOrientation(cardsPerPage) {
+  if (cardsPerPage === 2) {
+    return 'landscape'
+  }
+
+  if (cardsPerPage === 4) {
+    return 'portrait'
+  }
+
+  throw new Error('Cards per page must be 2 or 4.')
+}
+
+function getPageSize(cardsPerPage) {
+  if (getPageOrientation(cardsPerPage) === 'portrait') {
+    return {
+      width: A4_PORTRAIT_WIDTH,
+      height: A4_PORTRAIT_HEIGHT
+    }
+  }
+
+  return {
+    width: A4_PORTRAIT_HEIGHT,
+    height: A4_PORTRAIT_WIDTH
+  }
+}
+
 function getCardPlacement(indexOnPage, cardsPerPage) {
+  const pageSize = getPageSize(cardsPerPage)
   const { columns, rows } = getPageLayout(cardsPerPage)
-  const availableWidth = PAGE_WIDTH - PAGE_MARGIN_X * 2
-  const availableHeight = PAGE_HEIGHT - PAGE_MARGIN_Y * 2
+  const availableWidth = pageSize.width - PAGE_MARGIN_X * 2
+  const availableHeight = pageSize.height - PAGE_MARGIN_Y * 2
   const slotWidth = (availableWidth - SLOT_GAP_X * (columns - 1)) / columns
   const slotHeight = (availableHeight - SLOT_GAP_Y * (rows - 1)) / rows
   const slotColumn = indexOnPage % columns
@@ -102,8 +129,10 @@ function drawCardWord(pdf, word, cell, cardBox, fontSize) {
 }
 
 function drawCardPage(pdf, templateDataUrl, cards, cardsPerPage, startIndex) {
+  const pageSize = getPageSize(cardsPerPage)
+
   pdf.setFillColor(255, 251, 246)
-  pdf.rect(0, 0, PAGE_WIDTH, PAGE_HEIGHT, 'F')
+  pdf.rect(0, 0, pageSize.width, pageSize.height, 'F')
 
   cards.forEach((card, indexOnPage) => {
     const cardBox = getCardPlacement(indexOnPage, cardsPerPage)
@@ -131,7 +160,7 @@ function drawCardPage(pdf, templateDataUrl, cards, cardsPerPage, startIndex) {
     pdf.text(
       `Cartela ${startIndex + indexOnPage + 1}`,
       cardBox.x + cardBox.width - 6,
-      cardBox.y + cardBox.height - 6,
+      cardBox.y + cardBox.height - 2,
       {
         align: 'right'
       }
@@ -142,8 +171,9 @@ function drawCardPage(pdf, templateDataUrl, cards, cardsPerPage, startIndex) {
 export async function generatePdf(cards, cardsPerPage) {
   const { jsPDF } = await import('jspdf')
   const templateDataUrl = await loadTemplateDataUrl()
+  const orientation = getPageOrientation(cardsPerPage)
   const pdf = new jsPDF({
-    orientation: 'landscape',
+    orientation,
     unit: 'mm',
     format: 'a4'
   })
@@ -154,7 +184,7 @@ export async function generatePdf(cards, cardsPerPage) {
     startIndex += cardsPerPage
   ) {
     if (startIndex > 0) {
-      pdf.addPage('a4', 'landscape')
+      pdf.addPage('a4', orientation)
     }
 
     drawCardPage(
