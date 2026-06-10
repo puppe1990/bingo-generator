@@ -172,7 +172,7 @@ function drawCardPage(
 
   cards.forEach((card, indexOnPage) => {
     const cardBox = getCardPlacement(indexOnPage, cardsPerPage)
-    const fontSize = cardsPerPage === 2 ? 12 : 9
+    const fontSize = cardsPerPage === 2 ? 15 : 12
 
     pdf.addImage(
       templateDataUrl,
@@ -187,14 +187,10 @@ function drawCardPage(
     pdf.setTextColor(...TEXT_COLOR)
 
     card.forEach((word, wordIndex) => {
-      if (cellPositions) {
-        drawCardWordAtCenter(
-          pdf,
-          word,
-          cellPositions[wordIndex],
-          cardBox,
-          fontSize
-        )
+      const customPosition = cellPositions?.[wordIndex]
+
+      if (customPosition) {
+        drawCardWordAtCenter(pdf, word, customPosition, cardBox, fontSize)
         return
       }
 
