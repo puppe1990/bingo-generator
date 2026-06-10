@@ -2,6 +2,8 @@ import { useRef, useState } from 'react'
 import designAquarelaBase from '../assets/design-aquarela-base.png'
 import {
   TEMPLATE_CELLS,
+  TEMPLATE_CELL_HEIGHT,
+  TEMPLATE_CELL_WIDTH,
   TEMPLATE_HEIGHT,
   TEMPLATE_WIDTH
 } from '../data/template'
@@ -15,8 +17,8 @@ function clamp(value, min, max) {
 function getDefaultPosition(index) {
   const cell = TEMPLATE_CELLS[index]
   return {
-    x: (cell.x / TEMPLATE_WIDTH) * 100,
-    y: (cell.y / TEMPLATE_HEIGHT) * 100
+    x: ((cell.x + TEMPLATE_CELL_WIDTH / 2) / TEMPLATE_WIDTH) * 100,
+    y: ((cell.y + TEMPLATE_CELL_HEIGHT / 2) / TEMPLATE_HEIGHT) * 100
   }
 }
 

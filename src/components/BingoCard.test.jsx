@@ -2,6 +2,13 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import BingoCard from './BingoCard'
 import { buildCard, mulberry32 } from '../lib/bingo'
+import {
+  TEMPLATE_CELL_HEIGHT,
+  TEMPLATE_CELL_WIDTH,
+  TEMPLATE_CELLS,
+  TEMPLATE_HEIGHT,
+  TEMPLATE_WIDTH
+} from '../data/template'
 import { BINGO_WORDS } from '../data/words'
 
 describe('BingoCard', () => {
@@ -33,6 +40,21 @@ describe('BingoCard', () => {
 
     const img = screen.getByAltText('Cartela aquarela do bingo')
     expect(img.getAttribute('src')).not.toBe('')
+  })
+
+  it('centers default cell positions on template cell centers', () => {
+    const card = buildCard(BINGO_WORDS, mulberry32(12))
+    const templateCell = TEMPLATE_CELLS[0]
+    const expectedX =
+      ((templateCell.x + TEMPLATE_CELL_WIDTH / 2) / TEMPLATE_WIDTH) * 100
+    const expectedY =
+      ((templateCell.y + TEMPLATE_CELL_HEIGHT / 2) / TEMPLATE_HEIGHT) * 100
+
+    render(<BingoCard card={card} />)
+
+    const cellElement = screen.getByText(card[0]).closest('[style]')
+    expect(parseFloat(cellElement.style.left)).toBeCloseTo(expectedX, 1)
+    expect(parseFloat(cellElement.style.top)).toBeCloseTo(expectedY, 1)
   })
 
   it('renders cells at custom positions when cellPositions is provided', () => {

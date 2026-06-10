@@ -128,6 +128,25 @@ function drawCardWord(pdf, word, cell, cardBox, fontSize) {
   })
 }
 
+function drawCardWordAtCenter(pdf, word, position, cardBox, fontSize) {
+  const x = cardBox.x + (position.x / 100) * cardBox.width
+  const y = cardBox.y + (position.y / 100) * cardBox.height
+  const maxWidth = Math.max(
+    (TEMPLATE_CELL_WIDTH / TEMPLATE_WIDTH) * cardBox.width - 4,
+    18
+  )
+  const lines = pdf.splitTextToSize(word, maxWidth)
+  const lineHeight = fontSize * 0.38
+  const textBlockHeight = Math.max(lines.length, 1) * lineHeight
+  const startY = y - textBlockHeight / 2 + lineHeight * 0.78
+
+  pdf.text(lines, x, startY, {
+    align: 'center',
+    baseline: 'alphabetic',
+    maxWidth
+  })
+}
+
 function drawCardPage(
   pdf,
   templateDataUrl,
@@ -158,14 +177,18 @@ function drawCardPage(
     pdf.setTextColor(...TEXT_COLOR)
 
     card.forEach((word, wordIndex) => {
-      const cell = cellPositions
-        ? {
-            x: (cellPositions[wordIndex].x / 100) * TEMPLATE_WIDTH,
-            y: (cellPositions[wordIndex].y / 100) * TEMPLATE_HEIGHT
-          }
-        : TEMPLATE_CELLS[wordIndex]
+      if (cellPositions) {
+        drawCardWordAtCenter(
+          pdf,
+          word,
+          cellPositions[wordIndex],
+          cardBox,
+          fontSize
+        )
+        return
+      }
 
-      drawCardWord(pdf, word, cell, cardBox, fontSize)
+      drawCardWord(pdf, word, TEMPLATE_CELLS[wordIndex], cardBox, fontSize)
     })
 
     pdf.setFont('helvetica', 'normal')
