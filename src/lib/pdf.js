@@ -6,6 +6,7 @@ import {
   TEMPLATE_HEIGHT,
   TEMPLATE_WIDTH
 } from '../data/template'
+import { fitWordInCell } from './cellTextLayout'
 
 const A4_PORTRAIT_WIDTH = 210
 const A4_PORTRAIT_HEIGHT = 297
@@ -110,25 +111,60 @@ function getCardPlacement(indexOnPage, cardsPerPage) {
   }
 }
 
-function drawCardWord(pdf, word, cell, cardBox, fontSize) {
-  const x = cardBox.x + (cell.x / TEMPLATE_WIDTH) * cardBox.width
-  const y = cardBox.y + (cell.y / TEMPLATE_HEIGHT) * cardBox.height
-  const width = (TEMPLATE_CELL_WIDTH / TEMPLATE_WIDTH) * cardBox.width
-  const height = (TEMPLATE_CELL_HEIGHT / TEMPLATE_HEIGHT) * cardBox.height
-  const maxWidth = Math.max(width - 4, 18)
-  const lines = pdf.splitTextToSize(word, maxWidth)
-  const lineHeight = fontSize * 0.38
-  const textBlockHeight = Math.max(lines.length, 1) * lineHeight
-  const startY = y + (height - textBlockHeight) / 2 + lineHeight * 0.78
+function drawWordInBox(
+  pdf,
+  word,
+  boxX,
+  boxY,
+  boxWidth,
+  boxHeight,
+  baseFontSize
+) {
+  const layout = fitWordInCell(word, boxWidth, boxHeight, {
+    baseFontSizePx: baseFontSize,
+    minFontSizePx: baseFontSize * 0.55
+  })
+  const maxWidth = Math.max(boxWidth - 4, 18)
+  const lineHeight = layout.fontSizePx * 0.38
+  const textBlockHeight = Math.max(layout.lines.length, 1) * lineHeight
+  const startY = boxY + (boxHeight - textBlockHeight) / 2 + lineHeight * 0.78
 
-  pdf.text(lines, x + width / 2, startY, {
+  pdf.setFontSize(layout.fontSizePx)
+  pdf.text(layout.lines, boxX + boxWidth / 2, startY, {
     align: 'center',
     baseline: 'alphabetic',
     maxWidth
   })
 }
 
-function drawCardPage(pdf, templateDataUrl, cards, cardsPerPage, startIndex) {
+function drawCardWord(pdf, word, cell, cardBox, fontSize) {
+  const x = cardBox.x + (cell.x / TEMPLATE_WIDTH) * cardBox.width
+  const y = cardBox.y + (cell.y / TEMPLATE_HEIGHT) * cardBox.height
+  const width = (TEMPLATE_CELL_WIDTH / TEMPLATE_WIDTH) * cardBox.width
+  const height = (TEMPLATE_CELL_HEIGHT / TEMPLATE_HEIGHT) * cardBox.height
+
+  drawWordInBox(pdf, word, x, y, width, height, fontSize)
+}
+
+function drawCardWordAtCenter(pdf, word, position, cardBox, fontSize) {
+  const centerX = cardBox.x + (position.x / 100) * cardBox.width
+  const centerY = cardBox.y + (position.y / 100) * cardBox.height
+  const width = (TEMPLATE_CELL_WIDTH / TEMPLATE_WIDTH) * cardBox.width
+  const height = (TEMPLATE_CELL_HEIGHT / TEMPLATE_HEIGHT) * cardBox.height
+  const boxX = centerX - width / 2
+  const boxY = centerY - height / 2
+
+  drawWordInBox(pdf, word, boxX, boxY, width, height, fontSize)
+}
+
+function drawCardPage(
+  pdf,
+  templateDataUrl,
+  cards,
+  cardsPerPage,
+  startIndex,
+  cellPositions
+) {
   const pageSize = getPageSize(cardsPerPage)
 
   pdf.setFillColor(255, 251, 246)
@@ -151,6 +187,17 @@ function drawCardPage(pdf, templateDataUrl, cards, cardsPerPage, startIndex) {
     pdf.setTextColor(...TEXT_COLOR)
 
     card.forEach((word, wordIndex) => {
+      if (cellPositions) {
+        drawCardWordAtCenter(
+          pdf,
+          word,
+          cellPositions[wordIndex],
+          cardBox,
+          fontSize
+        )
+        return
+      }
+
       drawCardWord(pdf, word, TEMPLATE_CELLS[wordIndex], cardBox, fontSize)
     })
 
@@ -168,7 +215,12 @@ function drawCardPage(pdf, templateDataUrl, cards, cardsPerPage, startIndex) {
   })
 }
 
-export async function generatePdf(cards, cardsPerPage, customImageDataUrl) {
+export async function generatePdf(
+  cards,
+  cardsPerPage,
+  customImageDataUrl,
+  cellPositions
+) {
   const { jsPDF } = await import('jspdf')
   const templateDataUrl = customImageDataUrl || (await loadTemplateDataUrl())
   const orientation = getPageOrientation(cardsPerPage)
@@ -192,7 +244,8 @@ export async function generatePdf(cards, cardsPerPage, customImageDataUrl) {
       templateDataUrl,
       cards.slice(startIndex, startIndex + cardsPerPage),
       cardsPerPage,
-      startIndex
+      startIndex,
+      cellPositions
     )
   }
 

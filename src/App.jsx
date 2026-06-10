@@ -19,6 +19,7 @@ export default function App() {
   const [cardsPerPage, setCardsPerPage] = useState(2)
   const [previewCard, setPreviewCard] = useState(() => buildCard(BINGO_WORDS))
   const [customImageDataUrl, setCustomImageDataUrl] = useState(null)
+  const [cellPositions, setCellPositions] = useState(null)
 
   function refreshPreview() {
     setPreviewCard(buildCard(BINGO_WORDS))
@@ -31,9 +32,22 @@ export default function App() {
     setCustomImageDataUrl(dataUrl)
   }
 
+  function handleCellDrag(index, position) {
+    setCellPositions((prev) => {
+      const next = prev ? [...prev] : Array.from({ length: 16 }, () => null)
+      next[index] = position
+      return next
+    })
+  }
+
   async function handleGeneratePdf() {
     const cards = buildUniqueCards(cardCount, BINGO_WORDS)
-    const pdf = await generatePdf(cards, cardsPerPage, customImageDataUrl)
+    const pdf = await generatePdf(
+      cards,
+      cardsPerPage,
+      customImageDataUrl,
+      cellPositions
+    )
     pdf.save(
       `bingo-cha-de-bebe-${cardCount}-cartelas-${cardsPerPage}-por-folha.pdf`
     )
@@ -123,7 +137,12 @@ export default function App() {
             </div>
           </div>
         </div>
-        <BingoCard card={previewCard} backgroundImage={customImageDataUrl} />
+        <BingoCard
+          card={previewCard}
+          backgroundImage={customImageDataUrl}
+          cellPositions={cellPositions}
+          onCellDrag={handleCellDrag}
+        />
       </section>
     </main>
   )
