@@ -52,6 +52,14 @@ describe('BingoCard', () => {
   it('calls onCellDrag with new position when a cell is dragged', () => {
     const card = buildCard(BINGO_WORDS, mulberry32(12))
     const onCellDrag = vi.fn()
+    const cellWidth = 128
+    const cellHeight = 104
+    const cellLeft = 56
+    const cellTop = 410
+    const clickX = cellLeft + 20
+    const clickY = cellTop + 20
+    const dropX = 150
+    const dropY = 200
 
     render(<BingoCard card={card} onCellDrag={onCellDrag} />)
 
@@ -69,17 +77,33 @@ describe('BingoCard', () => {
     })
 
     const cellElement = screen.getByText(card[0]).closest('[style]')
+    cellElement.getBoundingClientRect = () => ({
+      left: cellLeft,
+      top: cellTop,
+      width: cellWidth,
+      height: cellHeight,
+      right: cellLeft + cellWidth,
+      bottom: cellTop + cellHeight,
+      x: cellLeft,
+      y: cellTop,
+      toJSON() {}
+    })
+    Object.defineProperty(cellElement, 'offsetWidth', { value: cellWidth })
+    Object.defineProperty(cellElement, 'offsetHeight', { value: cellHeight })
 
-    fireEvent.mouseDown(cellElement, { clientX: 50, clientY: 50 })
-    fireEvent.mouseMove(document, { clientX: 150, clientY: 100 })
+    fireEvent.mouseDown(cellElement, { clientX: clickX, clientY: clickY })
+    fireEvent.mouseMove(document, { clientX: dropX, clientY: dropY })
     fireEvent.mouseUp(document)
+
+    const expectedX = ((dropX - 20) / 675) * 100
+    const expectedY = ((dropY - 20) / 953) * 100
 
     expect(onCellDrag).toHaveBeenCalledWith(0, {
       x: expect.any(Number),
       y: expect.any(Number)
     })
-    expect(onCellDrag.mock.calls[0][1].x).toBeCloseTo(23.11, 0)
-    expect(onCellDrag.mock.calls[0][1].y).toBeCloseTo(48.27, 0)
+    expect(onCellDrag.mock.calls[0][1].x).toBeCloseTo(expectedX, 1)
+    expect(onCellDrag.mock.calls[0][1].y).toBeCloseTo(expectedY, 1)
   })
 
   it('does not throw when cell is dragged without onCellDrag callback', () => {
@@ -101,11 +125,87 @@ describe('BingoCard', () => {
     })
 
     const cellElement = screen.getByText(card[0]).closest('[style]')
+    cellElement.getBoundingClientRect = () => ({
+      left: 56,
+      top: 410,
+      width: 128,
+      height: 104,
+      right: 184,
+      bottom: 514,
+      x: 56,
+      y: 410,
+      toJSON() {}
+    })
+    Object.defineProperty(cellElement, 'offsetWidth', { value: 128 })
+    Object.defineProperty(cellElement, 'offsetHeight', { value: 104 })
 
     expect(() => {
-      fireEvent.mouseDown(cellElement, { clientX: 50, clientY: 50 })
-      fireEvent.mouseMove(document, { clientX: 150, clientY: 100 })
+      fireEvent.mouseDown(cellElement, { clientX: 70, clientY: 420 })
+      fireEvent.mouseMove(document, { clientX: 150, clientY: 500 })
       fireEvent.mouseUp(document)
     }).not.toThrow()
+  })
+
+  it('keeps cell under the cursor when dragging from the center of the cell', () => {
+    const card = buildCard(BINGO_WORDS, mulberry32(12))
+    const onCellDrag = vi.fn()
+    const cellWidth = 128
+    const cellHeight = 104
+    const containerLeft = 100
+    const containerTop = 50
+    const cellRenderedLeft = containerLeft + 215
+    const cellRenderedTop = containerTop + 330
+    const clickX = cellRenderedLeft + cellWidth / 2
+    const clickY = cellRenderedTop + cellHeight / 2
+    const dropX = 500
+    const dropY = 700
+
+    render(<BingoCard card={card} onCellDrag={onCellDrag} />)
+
+    const container = screen.getByTestId('card-canvas')
+    container.getBoundingClientRect = () => ({
+      left: containerLeft,
+      top: containerTop,
+      width: 675,
+      height: 953,
+      right: containerLeft + 675,
+      bottom: containerTop + 953,
+      x: containerLeft,
+      y: containerTop,
+      toJSON() {}
+    })
+
+    const cellElement = screen.getByText(card[0]).closest('[style]')
+    cellElement.getBoundingClientRect = () => ({
+      left: cellRenderedLeft,
+      top: cellRenderedTop,
+      width: cellWidth,
+      height: cellHeight,
+      right: cellRenderedLeft + cellWidth,
+      bottom: cellRenderedTop + cellHeight,
+      x: cellRenderedLeft,
+      y: cellRenderedTop,
+      toJSON() {}
+    })
+    Object.defineProperty(cellElement, 'offsetWidth', { value: cellWidth })
+    Object.defineProperty(cellElement, 'offsetHeight', { value: cellHeight })
+
+    fireEvent.mouseDown(cellElement, { clientX: clickX, clientY: clickY })
+    fireEvent.mouseMove(document, { clientX: dropX, clientY: dropY })
+
+    const expectedLeftPct = ((dropX - containerLeft - cellWidth / 2) / 675) * 100
+    const expectedTopPct = ((dropY - containerTop - cellHeight / 2) / 953) * 100
+
+    expect(parseFloat(cellElement.style.left)).toBeCloseTo(expectedLeftPct, 1)
+    expect(parseFloat(cellElement.style.top)).toBeCloseTo(expectedTopPct, 1)
+
+    fireEvent.mouseUp(document)
+
+    expect(onCellDrag).toHaveBeenCalledWith(0, {
+      x: expect.any(Number),
+      y: expect.any(Number)
+    })
+    expect(onCellDrag.mock.calls[0][1].x).toBeCloseTo(expectedLeftPct, 1)
+    expect(onCellDrag.mock.calls[0][1].y).toBeCloseTo(expectedTopPct, 1)
   })
 })

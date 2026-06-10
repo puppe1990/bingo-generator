@@ -36,29 +36,25 @@ export default function BingoCard({
     if (!containerRef.current) return
 
     const containerRect = containerRef.current.getBoundingClientRect()
-    const currentPosition = cellPositions?.[index] ?? getDefaultPosition(index)
-    const cellPixelX = (currentPosition.x / 100) * containerRect.width
-    const cellPixelY = (currentPosition.y / 100) * containerRect.height
-    const offsetX = event.clientX - containerRect.left - cellPixelX
-    const offsetY = event.clientY - containerRect.top - cellPixelY
     const cellElement = event.currentTarget
-
-    cellElement.style.width = `${(DEFAULT_CELL_WIDTH_PCT / 100) * containerRect.width}px`
-    cellElement.style.height = `${(DEFAULT_CELL_HEIGHT_PCT / 100) * containerRect.height}px`
+    const cellRect = cellElement.getBoundingClientRect()
+    const cellLeftInContainer = cellRect.left - containerRect.left
+    const cellTopInContainer = cellRect.top - containerRect.top
+    const offsetX = event.clientX - containerRect.left - cellLeftInContainer
+    const offsetY = event.clientY - containerRect.top - cellTopInContainer
 
     function handleMouseMove(moveEvent) {
+      const containerRect = containerRef.current.getBoundingClientRect()
+      const cellWidthPx = (DEFAULT_CELL_WIDTH_PCT / 100) * containerRect.width
+      const cellHeightPx = (DEFAULT_CELL_HEIGHT_PCT / 100) * containerRect.height
+
+      cellElement.style.width = `${cellWidthPx}px`
+      cellElement.style.height = `${cellHeightPx}px`
+
       const newCellX = moveEvent.clientX - containerRect.left - offsetX
       const newCellY = moveEvent.clientY - containerRect.top - offsetY
-      const clampedX = clamp(
-        newCellX,
-        0,
-        containerRect.width - cellElement.offsetWidth
-      )
-      const clampedY = clamp(
-        newCellY,
-        0,
-        containerRect.height - cellElement.offsetHeight
-      )
+      const clampedX = clamp(newCellX, 0, containerRect.width - cellWidthPx)
+      const clampedY = clamp(newCellY, 0, containerRect.height - cellHeightPx)
 
       cellElement.style.left = `${(clampedX / containerRect.width) * 100}%`
       cellElement.style.top = `${(clampedY / containerRect.height) * 100}%`
