@@ -4,18 +4,35 @@ import { BINGO_WORDS } from './data/words'
 import { buildCard, buildUniqueCards } from './lib/bingo'
 import { generatePdf } from './lib/pdf'
 
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = () => reject(new Error(`Failed to read file: ${file.name}`))
+    reader.readAsDataURL(file)
+  })
+}
+
 export default function App() {
   const [cardCount, setCardCount] = useState(100)
   const [cardsPerPage, setCardsPerPage] = useState(2)
   const [previewCard, setPreviewCard] = useState(() => buildCard(BINGO_WORDS))
+  const [customImageDataUrl, setCustomImageDataUrl] = useState(null)
 
   function refreshPreview() {
     setPreviewCard(buildCard(BINGO_WORDS))
   }
 
+  async function handleImageUpload(event) {
+    const file = event.target.files?.[0]
+    if (!file) return
+    const dataUrl = await fileToDataUrl(file)
+    setCustomImageDataUrl(dataUrl)
+  }
+
   async function handleGeneratePdf() {
     const cards = buildUniqueCards(cardCount, BINGO_WORDS)
-    const pdf = await generatePdf(cards, cardsPerPage)
+    const pdf = await generatePdf(cards, cardsPerPage, customImageDataUrl)
     pdf.save(
       `bingo-cha-de-bebe-${cardCount}-cartelas-${cardsPerPage}-por-folha.pdf`
     )
@@ -36,6 +53,17 @@ export default function App() {
             2 ou 4 cartelas por folha A4.
           </p>
           <div className="mt-7 grid gap-[18px]">
+            <label className="grid max-w-[220px] gap-2">
+              <span className="text-[0.95rem] font-semibold">
+                Imagem de fundo
+              </span>
+              <input
+                accept="image/*"
+                className="rounded-[14px] border border-sky-200 bg-white/80 px-3.5 py-3 text-slate-800 outline-none"
+                type="file"
+                onChange={handleImageUpload}
+              />
+            </label>
             <label className="grid max-w-[220px] gap-2">
               <span className="text-[0.95rem] font-semibold">
                 Quantidade de cartelas
@@ -94,7 +122,7 @@ export default function App() {
             </div>
           </div>
         </div>
-        <BingoCard card={previewCard} />
+        <BingoCard card={previewCard} backgroundImage={customImageDataUrl} />
       </section>
     </main>
   )

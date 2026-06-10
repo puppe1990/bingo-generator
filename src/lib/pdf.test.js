@@ -17,8 +17,8 @@ vi.mock('jspdf', () => ({
 
     rect() {}
 
-    addImage(_dataUrl, _format, x, y, width, height) {
-      jsPdfCalls.push({ type: 'addImage', x, y, width, height })
+    addImage(dataUrl, _format, x, y, width, height) {
+      jsPdfCalls.push({ type: 'addImage', dataUrl, x, y, width, height })
     }
 
     setFont() {}
@@ -83,6 +83,7 @@ describe('generatePdf', () => {
     })
     expect(jsPdfCalls[1]).toEqual({
       type: 'addImage',
+      dataUrl: expect.any(String),
       x: expect.any(Number),
       y: expect.any(Number),
       width: expect.any(Number),
@@ -124,5 +125,16 @@ describe('generatePdf', () => {
       format: 'a4',
       orientation: 'landscape'
     })
+  })
+
+  it('uses a custom image data URL instead of the default template when provided', async () => {
+    const { generatePdf } = await import('./pdf')
+    const customDataUrl = 'data:image/png;base64,customtemplate'
+
+    await generatePdf([createCard('A')], 2, customDataUrl)
+
+    const addImageCall = jsPdfCalls.find((call) => call.type === 'addImage')
+    expect(addImageCall).toBeDefined()
+    expect(globalThis.fetch).not.toHaveBeenCalled()
   })
 })

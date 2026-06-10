@@ -9,7 +9,7 @@ import {
 
 const TEXT_COLOR = '#2f3d4c'
 
-export default function BingoCard({ card }) {
+export default function BingoCard({ card, backgroundImage }) {
   return (
     <section aria-label="Prévia da cartela">
       <div className="overflow-hidden rounded-[28px] border border-sky-100/90 bg-white/80 p-3 shadow-[0_32px_70px_rgba(115,141,171,0.14)]">
@@ -20,7 +20,7 @@ export default function BingoCard({ card }) {
           <img
             alt="Cartela aquarela do bingo"
             className="h-full w-full rounded-[22px] object-cover"
-            src={designAquarelaBase}
+            src={backgroundImage || designAquarelaBase}
           />
           {card.map((word, index) => {
             const cell = TEMPLATE_CELLS[index]

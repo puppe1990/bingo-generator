@@ -168,9 +168,9 @@ function drawCardPage(pdf, templateDataUrl, cards, cardsPerPage, startIndex) {
   })
 }
 
-export async function generatePdf(cards, cardsPerPage) {
+export async function generatePdf(cards, cardsPerPage, customImageDataUrl) {
   const { jsPDF } = await import('jspdf')
-  const templateDataUrl = await loadTemplateDataUrl()
+  const templateDataUrl = customImageDataUrl || (await loadTemplateDataUrl())
   const orientation = getPageOrientation(cardsPerPage)
   const pdf = new jsPDF({
     orientation,
