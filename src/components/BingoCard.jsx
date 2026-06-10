@@ -35,6 +35,8 @@ export default function BingoCard({
   function handleMouseDown(event, index) {
     if (!containerRef.current) return
 
+    event.preventDefault()
+
     const containerRect = containerRef.current.getBoundingClientRect()
     const cellElement = event.currentTarget
     const cellRect = cellElement.getBoundingClientRect()
@@ -42,6 +44,8 @@ export default function BingoCard({
     const cellTopInContainer = cellRect.top - containerRect.top
     const offsetX = event.clientX - containerRect.left - cellLeftInContainer
     const offsetY = event.clientY - containerRect.top - cellTopInContainer
+    let lastX = (cellLeftInContainer / containerRect.width) * 100
+    let lastY = (cellTopInContainer / containerRect.height) * 100
 
     function handleMouseMove(moveEvent) {
       const containerRect = containerRef.current.getBoundingClientRect()
@@ -57,18 +61,18 @@ export default function BingoCard({
       const clampedX = clamp(newCellX, 0, containerRect.width - cellWidthPx)
       const clampedY = clamp(newCellY, 0, containerRect.height - cellHeightPx)
 
-      cellElement.style.left = `${(clampedX / containerRect.width) * 100}%`
-      cellElement.style.top = `${(clampedY / containerRect.height) * 100}%`
+      lastX = (clampedX / containerRect.width) * 100
+      lastY = (clampedY / containerRect.height) * 100
+
+      cellElement.style.left = `${lastX}%`
+      cellElement.style.top = `${lastY}%`
     }
 
     function handleMouseUp() {
-      const finalLeft = parseFloat(cellElement.style.left)
-      const finalTop = parseFloat(cellElement.style.top)
-
       cellElement.style.width = ''
       cellElement.style.height = ''
 
-      onCellDrag?.(index, { x: finalLeft, y: finalTop })
+      onCellDrag?.(index, { x: lastX, y: lastY })
 
       document.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseup', handleMouseUp)
