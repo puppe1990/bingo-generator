@@ -193,7 +193,8 @@ describe('BingoCard', () => {
     fireEvent.mouseDown(cellElement, { clientX: clickX, clientY: clickY })
     fireEvent.mouseMove(document, { clientX: dropX, clientY: dropY })
 
-    const expectedLeftPct = ((dropX - containerLeft - cellWidth / 2) / 675) * 100
+    const expectedLeftPct =
+      ((dropX - containerLeft - cellWidth / 2) / 675) * 100
     const expectedTopPct = ((dropY - containerTop - cellHeight / 2) / 953) * 100
 
     expect(parseFloat(cellElement.style.left)).toBeCloseTo(expectedLeftPct, 1)

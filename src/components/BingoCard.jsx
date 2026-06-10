@@ -46,7 +46,8 @@ export default function BingoCard({
     function handleMouseMove(moveEvent) {
       const containerRect = containerRef.current.getBoundingClientRect()
       const cellWidthPx = (DEFAULT_CELL_WIDTH_PCT / 100) * containerRect.width
-      const cellHeightPx = (DEFAULT_CELL_HEIGHT_PCT / 100) * containerRect.height
+      const cellHeightPx =
+        (DEFAULT_CELL_HEIGHT_PCT / 100) * containerRect.height
 
       cellElement.style.width = `${cellWidthPx}px`
       cellElement.style.height = `${cellHeightPx}px`
