@@ -172,7 +172,7 @@ function drawCardPage(
 
   cards.forEach((card, indexOnPage) => {
     const cardBox = getCardPlacement(indexOnPage, cardsPerPage)
-    const fontSize = cardsPerPage === 2 ? 12 : 9
+    const fontSize = cardsPerPage === 2 ? 15 : 12
 
     pdf.addImage(
       templateDataUrl,
