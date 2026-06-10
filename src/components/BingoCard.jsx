@@ -24,7 +24,12 @@ function getDefaultPosition(index) {
   }
 }
 
-export default function BingoCard({ card, backgroundImage, cellPositions, onCellDrag }) {
+export default function BingoCard({
+  card,
+  backgroundImage,
+  cellPositions,
+  onCellDrag
+}) {
   const containerRef = useRef(null)
 
   function handleMouseDown(event, index) {
@@ -44,8 +49,16 @@ export default function BingoCard({ card, backgroundImage, cellPositions, onCell
     function handleMouseMove(moveEvent) {
       const newCellX = moveEvent.clientX - containerRect.left - offsetX
       const newCellY = moveEvent.clientY - containerRect.top - offsetY
-      const clampedX = clamp(newCellX, 0, containerRect.width - cellElement.offsetWidth)
-      const clampedY = clamp(newCellY, 0, containerRect.height - cellElement.offsetHeight)
+      const clampedX = clamp(
+        newCellX,
+        0,
+        containerRect.width - cellElement.offsetWidth
+      )
+      const clampedY = clamp(
+        newCellY,
+        0,
+        containerRect.height - cellElement.offsetHeight
+      )
 
       cellElement.style.left = `${(clampedX / containerRect.width) * 100}%`
       cellElement.style.top = `${(clampedY / containerRect.height) * 100}%`

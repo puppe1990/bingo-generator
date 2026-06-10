@@ -128,7 +128,14 @@ function drawCardWord(pdf, word, cell, cardBox, fontSize) {
   })
 }
 
-function drawCardPage(pdf, templateDataUrl, cards, cardsPerPage, startIndex, cellPositions) {
+function drawCardPage(
+  pdf,
+  templateDataUrl,
+  cards,
+  cardsPerPage,
+  startIndex,
+  cellPositions
+) {
   const pageSize = getPageSize(cardsPerPage)
 
   pdf.setFillColor(255, 251, 246)
@@ -175,7 +182,12 @@ function drawCardPage(pdf, templateDataUrl, cards, cardsPerPage, startIndex, cel
   })
 }
 
-export async function generatePdf(cards, cardsPerPage, customImageDataUrl, cellPositions) {
+export async function generatePdf(
+  cards,
+  cardsPerPage,
+  customImageDataUrl,
+  cellPositions
+) {
   const { jsPDF } = await import('jspdf')
   const templateDataUrl = customImageDataUrl || (await loadTemplateDataUrl())
   const orientation = getPageOrientation(cardsPerPage)

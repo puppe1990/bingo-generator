@@ -67,7 +67,9 @@ describe('App', () => {
 
     fireEvent.click(screen.getByText('Embaralhar prévia'))
 
-    const cellsAfter = screen.getByTestId('card-canvas').querySelectorAll('.absolute')
+    const cellsAfter = screen
+      .getByTestId('card-canvas')
+      .querySelectorAll('.absolute')
     const firstCellAfterShuffle = cellsAfter[0]
     expect(firstCellAfterShuffle.style.left).not.toBe(originalLeft)
   })
