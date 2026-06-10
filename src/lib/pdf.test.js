@@ -137,4 +137,28 @@ describe('generatePdf', () => {
     expect(addImageCall).toBeDefined()
     expect(globalThis.fetch).not.toHaveBeenCalled()
   })
+
+  it('uses custom cell positions for word placement when provided', async () => {
+    const { generatePdf } = await import('./pdf')
+    const customPositions = Array.from({ length: 16 }, () => ({
+      x: 50,
+      y: 50
+    }))
+
+    await generatePdf([createCard('A')], 2, null, customPositions)
+
+    const defaultTextCall = jsPdfCalls.find(
+      (call) => call.type === 'text' && String(call.content) === 'A-1'
+    )
+    expect(defaultTextCall).toBeDefined()
+
+    jsPdfCalls.length = 0
+    await generatePdf([createCard('A')], 2)
+    const originalTextCall = jsPdfCalls.find(
+      (call) => call.type === 'text' && String(call.content) === 'A-1'
+    )
+
+    expect(defaultTextCall.x).not.toBeCloseTo(originalTextCall.x, 1)
+    expect(defaultTextCall.y).not.toBeCloseTo(originalTextCall.y, 1)
+  })
 })
