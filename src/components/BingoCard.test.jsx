@@ -42,6 +42,23 @@ describe('BingoCard', () => {
     expect(img.getAttribute('src')).not.toBe('')
   })
 
+  it('wraps long words inside the cell box instead of overflowing', () => {
+    const card = [
+      'Protetor de Berço',
+      ...Array.from({ length: 15 }, (_, index) => `Palavra-${index + 1}`)
+    ]
+
+    render(<BingoCard card={card} />)
+
+    const cellElement = screen.getByText(/Protetor/).closest('[style]')
+    const textSpan = cellElement.querySelector('span')
+    const cellWidthPct = (TEMPLATE_CELL_WIDTH / TEMPLATE_WIDTH) * 100
+
+    expect(cellElement.style.width).toBe(`${cellWidthPct}%`)
+    expect(textSpan.className).toContain('whitespace-pre-line')
+    expect(textSpan.textContent).toContain('\n')
+  })
+
   it('centers default cell positions on template cell centers', () => {
     const card = buildCard(BINGO_WORDS, mulberry32(12))
     const templateCell = TEMPLATE_CELLS[0]

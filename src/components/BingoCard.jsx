@@ -7,8 +7,11 @@ import {
   TEMPLATE_HEIGHT,
   TEMPLATE_WIDTH
 } from '../data/template'
+import { fitWordInCell } from '../lib/cellTextLayout'
 
 const TEXT_COLOR = '#2f3d4c'
+const CELL_WIDTH_PCT = (TEMPLATE_CELL_WIDTH / TEMPLATE_WIDTH) * 100
+const CELL_HEIGHT_PCT = (TEMPLATE_CELL_HEIGHT / TEMPLATE_HEIGHT) * 100
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max)
@@ -95,7 +98,7 @@ export default function BingoCard({
       <div className="overflow-hidden rounded-[28px] border border-sky-100/90 bg-white/80 p-3 shadow-[0_32px_70px_rgba(115,141,171,0.14)]">
         <div
           ref={containerRef}
-          className="relative mx-auto w-full max-w-[720px]"
+          className="relative mx-auto w-full max-w-[720px] [container-type:inline-size]"
           data-testid="card-canvas"
           style={{ aspectRatio: `${TEMPLATE_WIDTH} / ${TEMPLATE_HEIGHT}` }}
         >
@@ -110,21 +113,31 @@ export default function BingoCard({
                 ? { x: dragOffset.x, y: dragOffset.y }
                 : (cellPositions?.[index] ?? getDefaultPosition(index))
 
+            const textLayout = fitWordInCell(
+              word,
+              TEMPLATE_CELL_WIDTH,
+              TEMPLATE_CELL_HEIGHT
+            )
+            const fontSizeCqw = (textLayout.fontSizePx / TEMPLATE_WIDTH) * 100
+
             return (
               <div
-                className={`absolute flex items-center justify-center text-center font-serif font-semibold leading-tight ${onCellDrag ? 'cursor-grab' : ''}`}
+                className={`absolute flex items-center justify-center overflow-hidden px-[2%] text-center font-serif font-semibold leading-tight ${onCellDrag ? 'cursor-grab' : ''}`}
                 key={`${word}-${index}`}
                 style={{
                   color: TEXT_COLOR,
                   left: `${position.x}%`,
                   top: `${position.y}%`,
+                  width: `${CELL_WIDTH_PCT}%`,
+                  height: `${CELL_HEIGHT_PCT}%`,
                   transform: 'translate(-50%, -50%)',
-                  fontSize: 'clamp(0.85rem, 1.35vw, 1.5rem)',
-                  whiteSpace: 'nowrap'
+                  fontSize: `${fontSizeCqw}cqw`
                 }}
                 onMouseDown={(event) => handleMouseDown(event, index)}
               >
-                <span>{word}</span>
+                <span className="block w-full whitespace-pre-line">
+                  {textLayout.lines.join('\n')}
+                </span>
               </div>
             )
           })}
