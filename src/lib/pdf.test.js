@@ -161,4 +161,32 @@ describe('generatePdf', () => {
     expect(defaultTextCall.x).not.toBeCloseTo(originalTextCall.x, 1)
     expect(defaultTextCall.y).not.toBeCloseTo(originalTextCall.y, 1)
   })
+
+  it('falls back to template positions when cellPositions entries are null', async () => {
+    const { generatePdf } = await import('./pdf')
+    const partialPositions = Array.from({ length: 16 }, () => null)
+    partialPositions[0] = { x: 12, y: 18 }
+
+    await expect(
+      generatePdf([createCard('A')], 2, null, partialPositions)
+    ).resolves.toBeDefined()
+
+    const draggedTextCall = jsPdfCalls.find(
+      (call) => call.type === 'text' && String(call.content) === 'A-1'
+    )
+    const untouchedTextCall = jsPdfCalls.find(
+      (call) => call.type === 'text' && String(call.content) === 'A-2'
+    )
+
+    jsPdfCalls.length = 0
+    await generatePdf([createCard('A')], 2)
+    const defaultTextCall = jsPdfCalls.find(
+      (call) => call.type === 'text' && String(call.content) === 'A-2'
+    )
+
+    expect(draggedTextCall).toBeDefined()
+    expect(untouchedTextCall).toBeDefined()
+    expect(untouchedTextCall.x).toBeCloseTo(defaultTextCall.x, 1)
+    expect(untouchedTextCall.y).toBeCloseTo(defaultTextCall.y, 1)
+  })
 })

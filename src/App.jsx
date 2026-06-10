@@ -20,6 +20,8 @@ export default function App() {
   const [previewCard, setPreviewCard] = useState(() => buildCard(BINGO_WORDS))
   const [customImageDataUrl, setCustomImageDataUrl] = useState(null)
   const [cellPositions, setCellPositions] = useState(null)
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false)
+  const [pdfError, setPdfError] = useState(null)
 
   function refreshPreview() {
     setPreviewCard(buildCard(BINGO_WORDS))
@@ -41,16 +43,25 @@ export default function App() {
   }
 
   async function handleGeneratePdf() {
-    const cards = buildUniqueCards(cardCount, BINGO_WORDS)
-    const pdf = await generatePdf(
-      cards,
-      cardsPerPage,
-      customImageDataUrl,
-      cellPositions
-    )
-    pdf.save(
-      `bingo-cha-de-bebe-${cardCount}-cartelas-${cardsPerPage}-por-folha.pdf`
-    )
+    setIsGeneratingPdf(true)
+    setPdfError(null)
+
+    try {
+      const cards = buildUniqueCards(cardCount, BINGO_WORDS)
+      const pdf = await generatePdf(
+        cards,
+        cardsPerPage,
+        customImageDataUrl,
+        cellPositions
+      )
+      pdf.save(
+        `bingo-cha-de-bebe-${cardCount}-cartelas-${cardsPerPage}-por-folha.pdf`
+      )
+    } catch {
+      setPdfError('Não foi possível gerar o PDF. Tente novamente.')
+    } finally {
+      setIsGeneratingPdf(false)
+    }
   }
 
   return (
@@ -128,13 +139,24 @@ export default function App() {
                 Embaralhar prévia
               </button>
               <button
-                className="cursor-pointer rounded-full bg-sky-400 px-[18px] py-[14px] font-bold text-white shadow-[0_12px_30px_rgba(126,177,224,0.28)]"
+                aria-busy={isGeneratingPdf}
+                className={`rounded-full px-[18px] py-[14px] font-bold text-white shadow-[0_12px_30px_rgba(126,177,224,0.28)] ${
+                  isGeneratingPdf
+                    ? 'cursor-wait bg-sky-300'
+                    : 'cursor-pointer bg-sky-400'
+                }`}
+                disabled={isGeneratingPdf}
                 onClick={handleGeneratePdf}
                 type="button"
               >
-                Gerar PDF
+                {isGeneratingPdf ? 'Gerando PDF...' : 'Gerar PDF'}
               </button>
             </div>
+            {pdfError ? (
+              <p className="text-sm font-semibold text-rose-500" role="alert">
+                {pdfError}
+              </p>
+            ) : null}
           </div>
         </div>
         <BingoCard

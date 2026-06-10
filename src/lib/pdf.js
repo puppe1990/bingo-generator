@@ -187,14 +187,10 @@ function drawCardPage(
     pdf.setTextColor(...TEXT_COLOR)
 
     card.forEach((word, wordIndex) => {
-      if (cellPositions) {
-        drawCardWordAtCenter(
-          pdf,
-          word,
-          cellPositions[wordIndex],
-          cardBox,
-          fontSize
-        )
+      const customPosition = cellPositions?.[wordIndex]
+
+      if (customPosition) {
+        drawCardWordAtCenter(pdf, word, customPosition, cardBox, fontSize)
         return
       }
 
