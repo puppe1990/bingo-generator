@@ -1,16 +1,12 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import designAquarelaBase from '../assets/design-aquarela-base.png'
 import {
   TEMPLATE_CELLS,
-  TEMPLATE_CELL_HEIGHT,
-  TEMPLATE_CELL_WIDTH,
   TEMPLATE_HEIGHT,
   TEMPLATE_WIDTH
 } from '../data/template'
 
 const TEXT_COLOR = '#2f3d4c'
-const DEFAULT_CELL_WIDTH_PCT = (TEMPLATE_CELL_WIDTH / TEMPLATE_WIDTH) * 100
-const DEFAULT_CELL_HEIGHT_PCT = (TEMPLATE_CELL_HEIGHT / TEMPLATE_HEIGHT) * 100
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max)
@@ -31,48 +27,55 @@ export default function BingoCard({
   onCellDrag
 }) {
   const containerRef = useRef(null)
+  const [draggingIndex, setDraggingIndex] = useState(null)
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+  const dragOffsetRef = useRef({ x: 0, y: 0 })
 
   function handleMouseDown(event, index) {
-    if (!containerRef.current) return
+    if (!containerRef.current || !onCellDrag) return
 
     event.preventDefault()
 
-    const containerRect = containerRef.current.getBoundingClientRect()
     const cellElement = event.currentTarget
     const cellRect = cellElement.getBoundingClientRect()
-    const cellLeftInContainer = cellRect.left - containerRect.left
-    const cellTopInContainer = cellRect.top - containerRect.top
-    const offsetX = event.clientX - containerRect.left - cellLeftInContainer
-    const offsetY = event.clientY - containerRect.top - cellTopInContainer
-    let lastX = (cellLeftInContainer / containerRect.width) * 100
-    let lastY = (cellTopInContainer / containerRect.height) * 100
+    const cellCenterX = cellRect.left + cellRect.width / 2
+    const cellCenterY = cellRect.top + cellRect.height / 2
+    const offsetX = event.clientX - cellCenterX
+    const offsetY = event.clientY - cellCenterY
+    const currentPosition = cellPositions?.[index] ?? getDefaultPosition(index)
+
+    setDraggingIndex(index)
+    setDragOffset({ x: currentPosition.x, y: currentPosition.y })
+    dragOffsetRef.current = { x: currentPosition.x, y: currentPosition.y }
 
     function handleMouseMove(moveEvent) {
       const containerRect = containerRef.current.getBoundingClientRect()
-      const cellWidthPx = (DEFAULT_CELL_WIDTH_PCT / 100) * containerRect.width
-      const cellHeightPx =
-        (DEFAULT_CELL_HEIGHT_PCT / 100) * containerRect.height
+      const cellWidthPx = cellRect.width
+      const cellHeightPx = cellRect.height
 
-      cellElement.style.width = `${cellWidthPx}px`
-      cellElement.style.height = `${cellHeightPx}px`
+      const newCenterX = moveEvent.clientX - containerRect.left - offsetX
+      const newCenterY = moveEvent.clientY - containerRect.top - offsetY
+      const clampedX = clamp(
+        newCenterX,
+        cellWidthPx / 2,
+        containerRect.width - cellWidthPx / 2
+      )
+      const clampedY = clamp(
+        newCenterY,
+        cellHeightPx / 2,
+        containerRect.height - cellHeightPx / 2
+      )
 
-      const newCellX = moveEvent.clientX - containerRect.left - offsetX
-      const newCellY = moveEvent.clientY - containerRect.top - offsetY
-      const clampedX = clamp(newCellX, 0, containerRect.width - cellWidthPx)
-      const clampedY = clamp(newCellY, 0, containerRect.height - cellHeightPx)
+      const newX = (clampedX / containerRect.width) * 100
+      const newY = (clampedY / containerRect.height) * 100
 
-      lastX = (clampedX / containerRect.width) * 100
-      lastY = (clampedY / containerRect.height) * 100
-
-      cellElement.style.left = `${lastX}%`
-      cellElement.style.top = `${lastY}%`
+      setDragOffset({ x: newX, y: newY })
+      dragOffsetRef.current = { x: newX, y: newY }
     }
 
     function handleMouseUp() {
-      cellElement.style.width = ''
-      cellElement.style.height = ''
-
-      onCellDrag?.(index, { x: lastX, y: lastY })
+      onCellDrag(index, { x: dragOffsetRef.current.x, y: dragOffsetRef.current.y })
+      setDraggingIndex(null)
 
       document.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseup', handleMouseUp)
@@ -97,19 +100,22 @@ export default function BingoCard({
             src={backgroundImage || designAquarelaBase}
           />
           {card.map((word, index) => {
-            const position = cellPositions?.[index] ?? getDefaultPosition(index)
+            const position =
+              draggingIndex === index
+                ? { x: dragOffset.x, y: dragOffset.y }
+                : cellPositions?.[index] ?? getDefaultPosition(index)
 
             return (
               <div
-                className={`absolute flex items-center justify-center px-[0.25rem] text-center font-serif font-semibold leading-tight ${onCellDrag ? 'cursor-grab' : ''}`}
+                className={`absolute flex items-center justify-center text-center font-serif font-semibold leading-tight ${onCellDrag ? 'cursor-grab' : ''}`}
                 key={`${word}-${index}`}
                 style={{
                   color: TEXT_COLOR,
                   left: `${position.x}%`,
                   top: `${position.y}%`,
-                  width: `${DEFAULT_CELL_WIDTH_PCT}%`,
-                  height: `${DEFAULT_CELL_HEIGHT_PCT}%`,
-                  fontSize: 'clamp(0.85rem, 1.35vw, 1.5rem)'
+                  transform: 'translate(-50%, -50%)',
+                  fontSize: 'clamp(0.85rem, 1.35vw, 1.5rem)',
+                  whiteSpace: 'nowrap'
                 }}
                 onMouseDown={(event) => handleMouseDown(event, index)}
               >

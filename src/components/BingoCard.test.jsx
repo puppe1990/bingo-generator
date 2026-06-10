@@ -56,10 +56,14 @@ describe('BingoCard', () => {
     const cellHeight = 104
     const cellLeft = 56
     const cellTop = 410
+    const cellCenterX = cellLeft + cellWidth / 2
+    const cellCenterY = cellTop + cellHeight / 2
     const clickX = cellLeft + 20
     const clickY = cellTop + 20
     const dropX = 150
     const dropY = 200
+    const offsetX = clickX - cellCenterX
+    const offsetY = clickY - cellCenterY
 
     render(<BingoCard card={card} onCellDrag={onCellDrag} />)
 
@@ -95,8 +99,8 @@ describe('BingoCard', () => {
     fireEvent.mouseMove(document, { clientX: dropX, clientY: dropY })
     fireEvent.mouseUp(document)
 
-    const expectedX = ((dropX - 20) / 675) * 100
-    const expectedY = ((dropY - 20) / 953) * 100
+    const expectedX = ((dropX - offsetX) / 675) * 100
+    const expectedY = ((dropY - offsetY) / 953) * 100
 
     expect(onCellDrag).toHaveBeenCalledWith(0, {
       x: expect.any(Number),
@@ -155,10 +159,14 @@ describe('BingoCard', () => {
     const containerTop = 50
     const cellRenderedLeft = containerLeft + 215
     const cellRenderedTop = containerTop + 330
-    const clickX = cellRenderedLeft + cellWidth / 2
-    const clickY = cellRenderedTop + cellHeight / 2
+    const cellCenterX = cellRenderedLeft + cellWidth / 2
+    const cellCenterY = cellRenderedTop + cellHeight / 2
+    const clickX = cellCenterX
+    const clickY = cellCenterY
     const dropX = 500
     const dropY = 700
+    const offsetX = clickX - cellCenterX
+    const offsetY = clickY - cellCenterY
 
     render(<BingoCard card={card} onCellDrag={onCellDrag} />)
 
@@ -193,9 +201,8 @@ describe('BingoCard', () => {
     fireEvent.mouseDown(cellElement, { clientX: clickX, clientY: clickY })
     fireEvent.mouseMove(document, { clientX: dropX, clientY: dropY })
 
-    const expectedLeftPct =
-      ((dropX - containerLeft - cellWidth / 2) / 675) * 100
-    const expectedTopPct = ((dropY - containerTop - cellHeight / 2) / 953) * 100
+    const expectedLeftPct = ((dropX - containerLeft - offsetX) / 675) * 100
+    const expectedTopPct = ((dropY - containerTop - offsetY) / 953) * 100
 
     expect(parseFloat(cellElement.style.left)).toBeCloseTo(expectedLeftPct, 1)
     expect(parseFloat(cellElement.style.top)).toBeCloseTo(expectedTopPct, 1)
