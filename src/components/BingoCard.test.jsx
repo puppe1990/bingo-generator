@@ -15,4 +15,23 @@ describe('BingoCard', () => {
     expect(screen.getByText(card[0])).toBeInTheDocument()
     expect(screen.getByText(card[15])).toBeInTheDocument()
   })
+
+  it('renders a custom background image when backgroundImage is provided', () => {
+    const card = buildCard(BINGO_WORDS, mulberry32(42))
+    const customImage = 'data:image/png;base64,customimage'
+
+    render(<BingoCard card={card} backgroundImage={customImage} />)
+
+    const img = screen.getByAltText('Cartela aquarela do bingo')
+    expect(img).toHaveAttribute('src', customImage)
+  })
+
+  it('falls back to the default aquarela when backgroundImage is not provided', () => {
+    const card = buildCard(BINGO_WORDS, mulberry32(42))
+
+    render(<BingoCard card={card} />)
+
+    const img = screen.getByAltText('Cartela aquarela do bingo')
+    expect(img.getAttribute('src')).not.toBe('')
+  })
 })
