@@ -74,7 +74,10 @@ export default function BingoCard({
     }
 
     function handleMouseUp() {
-      onCellDrag(index, { x: dragOffsetRef.current.x, y: dragOffsetRef.current.y })
+      onCellDrag(index, {
+        x: dragOffsetRef.current.x,
+        y: dragOffsetRef.current.y
+      })
       setDraggingIndex(null)
 
       document.removeEventListener('mousemove', handleMouseMove)
@@ -103,7 +106,7 @@ export default function BingoCard({
             const position =
               draggingIndex === index
                 ? { x: dragOffset.x, y: dragOffset.y }
-                : cellPositions?.[index] ?? getDefaultPosition(index)
+                : (cellPositions?.[index] ?? getDefaultPosition(index))
 
             return (
               <div
